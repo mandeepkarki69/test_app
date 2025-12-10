@@ -9,9 +9,13 @@ import '../helpers/event_detail_mappers.dart';
 import '../helpers/event_detail_models.dart';
 import 'about_section.dart';
 import 'artist_section.dart';
+import 'gallery_section.dart';
 import 'more_info_section.dart';
+import 'organizer_section.dart';
 import 'tab_bar_header.dart';
+import 'ticket_bottom_bar.dart';
 import 'ticket_section.dart';
+import 'terms_section.dart';
 
 class EventDetailView extends StatelessWidget {
   const EventDetailView({super.key});
@@ -23,13 +27,18 @@ class EventDetailView extends StatelessWidget {
     return BlocBuilder<EventDetailCubit, EventDetailState>(
       builder: (BuildContext context, EventDetailState state) {
         return state.when(
-          initial: () => const Center(child: CircularProgressIndicator()),
-          loading: () => const Center(child: CircularProgressIndicator()),
+          initial: () => Center(child: SizedBox()),
+          loading: () => const Center(
+            child: CircularProgressIndicator(color: Color(0xFFE50914)),
+          ),
           error: (String message) => Center(
             child: Text(message, style: const TextStyle(color: Colors.white)),
           ),
           success: (EventDetail detail) {
             final GlobalKey ticketKey = GlobalKey();
+            final GlobalKey galleryKey = GlobalKey();
+            final GlobalKey termsKey = GlobalKey();
+            final GlobalKey organizerKey = GlobalKey();
             final GlobalKey moreInfoKey = GlobalKey();
             final GlobalKey artistKey = GlobalKey();
             final GlobalKey aboutKey = GlobalKey();
@@ -46,6 +55,9 @@ class EventDetailView extends StatelessWidget {
             final String priceText = detail.amountRange != null
                 ? 'Rs.${detail.amountRange!.lowestAmount} - Rs.${detail.amountRange!.highestAmount}'
                 : 'Rs.10,000 - Rs.50,000';
+            final String bottomPrice = detail.amountRange != null
+                ? 'Rs. ${detail.amountRange!.lowestAmount} onwards'
+                : 'Rs. 10,000 onwards';
             final String startDate = detail.dateRange.startDatetime;
             final String endDate = detail.dateRange.endDatetime;
             final String timeRange = formatTimeRange(startDate, endDate);
@@ -89,6 +101,16 @@ class EventDetailView extends StatelessWidget {
               ...detail.eventType,
               ...detail.language,
             ];
+            final String organizerName = detail.organizer?.name ?? 'Organizer';
+            final String organizerImage =
+                detail.organizer?.image ??
+                'https://revel-event-dev.s3.amazonaws.com/media/filer/filer_public/53/dd/53dda8e9-8a05-4ca7-ba9e-106b72b0b1c2/default-artist.png';
+            final int organizerFollowers =
+                detail.organizer?.totalFollowersCount ?? 0;
+            final String organizerRole =
+                detail.organizer?.description?.isNotEmpty == true
+                ? detail.organizer!.description!
+                : 'Organizer';
 
             final double pinnedHeight =
                 kToolbarHeight + MediaQuery.of(context).padding.top + 46.h;
@@ -96,7 +118,7 @@ class EventDetailView extends StatelessWidget {
             return BlocBuilder<EventDetailViewCubit, EventDetailViewState>(
               builder: (BuildContext context, EventDetailViewState viewState) {
                 return DefaultTabController(
-                  length: 4,
+                  length: 7,
                   initialIndex: viewState.tabIndex,
                   child: BlocListener<EventDetailViewCubit, EventDetailViewState>(
                     listenWhen:
@@ -119,434 +141,498 @@ class EventDetailView extends StatelessWidget {
                           moreInfoKey,
                           artistKey,
                           aboutKey,
+                          galleryKey,
+                          termsKey,
+                          organizerKey,
                         ], pinnedHeight + 6.h);
                         return false;
                       },
                       child: Scaffold(
                         backgroundColor: Colors.black,
-                        body: CustomScrollView(
-                          controller: viewCubit.scrollController,
-                          slivers: <Widget>[
-                            SliverAppBar(
-                              backgroundColor: Colors.black,
-                              elevation: 0,
-                              pinned: true,
-                              expandedHeight: 235.h,
-                              leadingWidth: 48.w,
-                              leading: IconButton(
-                                onPressed: () =>
-                                    Navigator.of(context).maybePop(),
-                                icon: Icon(
-                                  Icons.arrow_back,
-                                  color: Colors.white,
-                                  size: 26.sp,
-                                ),
-                                padding: EdgeInsets.all(4.w),
-                                splashRadius: 24.r,
-                              ),
-                              actions: <Widget>[
-                                IconButton(
-                                  onPressed: () {},
+                        bottomNavigationBar: TicketBottomBar(
+                          priceText: bottomPrice,
+                          onBuyPressed: () {},
+                        ),
+                        body: RefreshIndicator(
+                          color: const Color(0xFFE50914),
+                          backgroundColor: Colors.black,
+                          onRefresh: () async {
+                            await context.read<EventDetailCubit>().fetchEvent(
+                              detail.id,
+                            );
+                          },
+                          child: CustomScrollView(
+                            controller: viewCubit.scrollController,
+                            physics: const AlwaysScrollableScrollPhysics(),
+                            slivers: <Widget>[
+                              SliverAppBar(
+                                backgroundColor: Colors.black,
+                                elevation: 0,
+                                pinned: true,
+                                expandedHeight: 235.h,
+                                leadingWidth: 48.w,
+                                leading: IconButton(
+                                  onPressed: () =>
+                                      Navigator.of(context).maybePop(),
                                   icon: Icon(
-                                    Icons.share,
+                                    Icons.arrow_back,
                                     color: Colors.white,
-                                    size: 24.sp,
+                                    size: 26.sp,
                                   ),
                                   padding: EdgeInsets.all(4.w),
                                   splashRadius: 24.r,
                                 ),
-                                IconButton(
-                                  onPressed: () {},
-                                  icon: Icon(
-                                    Icons.more_vert,
-                                    color: Colors.white,
-                                    size: 24.sp,
+                                actions: <Widget>[
+                                  IconButton(
+                                    onPressed: () {},
+                                    icon: Icon(
+                                      Icons.share,
+                                      color: Colors.white,
+                                      size: 24.sp,
+                                    ),
+                                    padding: EdgeInsets.all(4.w),
+                                    splashRadius: 24.r,
                                   ),
-                                  padding: EdgeInsets.all(4.w),
-                                  splashRadius: 24.r,
-                                ),
-                                SizedBox(width: 8.w),
-                              ],
-                              flexibleSpace: FlexibleSpaceBar(
-                                background: Stack(
-                                  fit: StackFit.expand,
-                                  children: <Widget>[
-                                    Image.network(
-                                      headerImage,
-                                      fit: BoxFit.cover,
-                                      errorBuilder:
-                                          (
-                                            BuildContext context,
-                                            Object error,
-                                            StackTrace? st,
-                                          ) {
-                                            return Container(
-                                              color: Colors.black,
-                                              alignment: Alignment.center,
-                                              child: const Icon(
-                                                Icons.image_not_supported,
-                                                color: Colors.white70,
-                                              ),
-                                            );
-                                          },
+                                  IconButton(
+                                    onPressed: () {},
+                                    icon: Icon(
+                                      Icons.more_vert,
+                                      color: Colors.white,
+                                      size: 24.sp,
                                     ),
-                                    DecoratedBox(
-                                      decoration: BoxDecoration(
-                                        gradient: LinearGradient(
-                                          begin: Alignment.topCenter,
-                                          end: Alignment.bottomCenter,
-                                          colors: const <Color>[
-                                            Color.fromRGBO(0, 0, 0, 0.2),
-                                            Color.fromRGBO(0, 0, 0, 0.65),
-                                          ],
-                                        ),
+                                    padding: EdgeInsets.all(4.w),
+                                    splashRadius: 24.r,
+                                  ),
+                                  SizedBox(width: 8.w),
+                                ],
+                                flexibleSpace: FlexibleSpaceBar(
+                                  background: Stack(
+                                    fit: StackFit.expand,
+                                    children: <Widget>[
+                                      Image.network(
+                                        headerImage,
+                                        fit: BoxFit.cover,
+                                        errorBuilder:
+                                            (
+                                              BuildContext context,
+                                              Object error,
+                                              StackTrace? st,
+                                            ) {
+                                              return Container(
+                                                color: Colors.black,
+                                                alignment: Alignment.center,
+                                                child: const Icon(
+                                                  Icons.image_not_supported,
+                                                  color: Colors.white70,
+                                                ),
+                                              );
+                                            },
                                       ),
-                                    ),
-                                    Positioned(
-                                      left: 16.w,
-                                      right: 16.w,
-                                      bottom: 12.h,
-                                      child: Text(
-                                        title,
-                                        maxLines: 2,
-                                        overflow: TextOverflow.ellipsis,
-                                        style: TextStyle(
-                                          color: Colors.white,
-                                          fontSize: 18.sp,
-                                          fontWeight: FontWeight.w500,
-                                        ),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ),
-                            SliverToBoxAdapter(
-                              child: Padding(
-                                padding: EdgeInsets.symmetric(
-                                  horizontal: 10.w,
-                                  vertical: 10.h,
-                                ),
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: <Widget>[
-                                    Wrap(
-                                      spacing: 12.w,
-                                      runSpacing: 12.h,
-                                      children: chips.isNotEmpty
-                                          ? chips
-                                                .take(5)
-                                                .toList()
-                                                .asMap()
-                                                .entries
-                                                .map(
-                                                  (MapEntry<int, String> e) =>
-                                                      buildPill(
-                                                        e.value,
-                                                        isRed: e.key == 0,
-                                                      ),
-                                                )
-                                                .toList()
-                                          : <Widget>[
-                                              buildPill('Music Shows'),
-                                              buildPill('Pop'),
+                                      DecoratedBox(
+                                        decoration: BoxDecoration(
+                                          gradient: LinearGradient(
+                                            begin: Alignment.topCenter,
+                                            end: Alignment.bottomCenter,
+                                            colors: const <Color>[
+                                              Color.fromRGBO(0, 0, 0, 0.2),
+                                              Color.fromRGBO(0, 0, 0, 0.65),
                                             ],
-                                    ),
-                                    15.h.verticalSpace,
-                                    Row(
-                                      children: <Widget>[
-                                        Icon(
-                                          Icons.location_on_outlined,
-                                          color: Colors.white70,
-                                          size: 16.sp,
+                                          ),
                                         ),
-                                        4.w.horizontalSpace,
-                                        Text(
-                                          venue,
+                                      ),
+                                      Positioned(
+                                        left: 16.w,
+                                        right: 16.w,
+                                        bottom: 12.h,
+                                        child: Text(
+                                          title,
+                                          maxLines: 2,
+                                          overflow: TextOverflow.ellipsis,
                                           style: TextStyle(
-                                            color: Colors.white70,
-                                            fontSize: 12.sp,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                    10.h.verticalSpace,
-                                    Row(
-                                      children: <Widget>[
-                                        Icon(
-                                          Icons.calendar_month_outlined,
-                                          color: Colors.white70,
-                                          size: 15.sp,
-                                        ),
-                                        4.w.horizontalSpace,
-                                        Text(
-                                          startDate.split('-').first.trim(),
-                                          style: TextStyle(
-                                            color: Colors.white70,
-                                            fontSize: 12.sp,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                    10.h.verticalSpace,
-                                    Row(
-                                      children: <Widget>[
-                                        Icon(
-                                          Icons.person_outline,
-                                          color: Colors.white70,
-                                          size: 16.sp,
-                                        ),
-                                        4.w.horizontalSpace,
-                                        Text(
-                                          'Organized by $organizer',
-                                          style: TextStyle(
-                                            color: Colors.white70,
-                                            fontSize: 12.sp,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                    10.h.verticalSpace,
-                                    Row(
-                                      children: <Widget>[
-                                        Container(
-                                          height: 20.h,
-                                          width: 20.h,
-                                          decoration: const BoxDecoration(
-                                            color: Color(0xFFE50914),
-                                            shape: BoxShape.circle,
-                                          ),
-                                          alignment: Alignment.center,
-                                          child: Icon(
-                                            Icons.currency_rupee,
                                             color: Colors.white,
-                                            size: 14.sp,
-                                          ),
-                                        ),
-                                        8.w.horizontalSpace,
-                                        Text(
-                                          priceText,
-                                          style: TextStyle(
-                                            color: const Color(0xFFE50914),
-                                            fontSize: 12.sp,
+                                            fontSize: 18.sp,
                                             fontWeight: FontWeight.w500,
                                           ),
                                         ),
-                                      ],
-                                    ),
-                                    24.h.verticalSpace,
-                                    Divider(
-                                      color: Colors.white24,
-                                      thickness: 2.h,
-                                    ),
-                                    20.h.verticalSpace,
-                                    Text(
-                                      'Click on Interested to stay updated about this event.',
-                                      style: TextStyle(
-                                        color: Colors.white,
-                                        fontSize: 14.sp,
-                                        height: 1.5,
                                       ),
-                                    ),
-                                    Padding(
-                                      padding: EdgeInsets.symmetric(
-                                        horizontal: 10.w,
-                                        vertical: 12.h,
-                                      ),
-                                      child: Row(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.spaceBetween,
-                                        children: <Widget>[
-                                          SizedBox(
-                                            width: 160.w,
-                                            child: Column(
-                                              children: <Widget>[
-                                                Row(
-                                                  children: <Widget>[
-                                                    Icon(
-                                                      Icons.thumb_up,
-                                                      color: const Color(
-                                                        0xFFE50914,
-                                                      ),
-                                                      size: 16.sp,
-                                                    ),
-                                                    6.w.horizontalSpace,
-                                                    Text(
-                                                      '${detail.interestedCount}',
-                                                      style: TextStyle(
-                                                        color: Colors.white,
-                                                        fontSize: 14.sp,
-                                                        fontWeight:
-                                                            FontWeight.w500,
-                                                      ),
-                                                    ),
-                                                  ],
-                                                ),
-                                                4.h.verticalSpace,
-                                                Text(
-                                                  'People have shown interest recently',
-                                                  style: TextStyle(
-                                                    color: Colors.white,
-                                                    fontSize: 12.sp,
-                                                  ),
-                                                ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                              SliverToBoxAdapter(
+                                child: Padding(
+                                  padding: EdgeInsets.symmetric(
+                                    horizontal: 10.w,
+                                    vertical: 10.h,
+                                  ),
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: <Widget>[
+                                      Wrap(
+                                        spacing: 12.w,
+                                        runSpacing: 12.h,
+                                        children: chips.isNotEmpty
+                                            ? chips
+                                                  .take(5)
+                                                  .toList()
+                                                  .asMap()
+                                                  .entries
+                                                  .map(
+                                                    (MapEntry<int, String> e) =>
+                                                        buildPill(
+                                                          e.value,
+                                                          isRed: e.key == 0,
+                                                        ),
+                                                  )
+                                                  .toList()
+                                            : <Widget>[
+                                                buildPill('Music Shows'),
+                                                buildPill('Pop'),
                                               ],
-                                            ),
+                                      ),
+                                      15.h.verticalSpace,
+                                      Row(
+                                        children: <Widget>[
+                                          Icon(
+                                            Icons.location_on_outlined,
+                                            color: Colors.white70,
+                                            size: 16.sp,
                                           ),
-                                          ElevatedButton(
-                                            onPressed: () {},
-                                            style: ElevatedButton.styleFrom(
-                                              backgroundColor:
-                                                  Colors.transparent,
-                                              foregroundColor: Colors.white,
-                                              side: const BorderSide(
-                                                color: Color(0xFF323232),
-                                              ),
-                                              elevation: 0,
-                                              padding: EdgeInsets.symmetric(
-                                                horizontal: 18.w,
-                                                vertical: 7.h,
-                                              ),
-                                              shape: RoundedRectangleBorder(
-                                                borderRadius:
-                                                    BorderRadius.circular(4.r),
-                                              ),
-                                            ),
-                                            child: Text(
-                                              'Interested ?',
-                                              style: TextStyle(
-                                                color: Colors.white,
-                                                fontSize: 12.sp,
-                                                fontWeight: FontWeight.w400,
-                                              ),
+                                          4.w.horizontalSpace,
+                                          Text(
+                                            venue,
+                                            style: TextStyle(
+                                              color: Colors.white70,
+                                              fontSize: 12.sp,
                                             ),
                                           ),
                                         ],
                                       ),
-                                    ),
-                                    20.h.verticalSpace,
-                                    Divider(
-                                      color: Colors.white24,
-                                      thickness: 2.h,
-                                    ),
-                                    20.h.verticalSpace,
-                                  ],
-                                ),
-                              ),
-                            ),
-                            SliverPersistentHeader(
-                              pinned: true,
-                              delegate: TabBarHeader(
-                                TabBar(
-                                  dividerColor: Colors.grey.shade600,
-                                  dividerHeight: 2.h,
-                                  isScrollable: false,
-                                  labelColor: Colors.white,
-                                  unselectedLabelColor: Colors.grey.shade600,
-                                  indicatorColor: const Color(0xFFE50914),
-                                  indicatorWeight: 3.h,
-                                  onTap: (int index) =>
-                                      viewCubit.scrollToSection(
-                                        index,
-                                        <GlobalKey>[
-                                          ticketKey,
-                                          moreInfoKey,
-                                          artistKey,
-                                          aboutKey,
-                                        ][index],
-                                        pinnedHeight,
+                                      10.h.verticalSpace,
+                                      Row(
+                                        children: <Widget>[
+                                          Icon(
+                                            Icons.calendar_month_outlined,
+                                            color: Colors.white70,
+                                            size: 15.sp,
+                                          ),
+                                          4.w.horizontalSpace,
+                                          Text(
+                                            startDate.split('-').first.trim(),
+                                            style: TextStyle(
+                                              color: Colors.white70,
+                                              fontSize: 12.sp,
+                                            ),
+                                          ),
+                                        ],
                                       ),
-                                  labelStyle: TextStyle(
-                                    fontSize: 13.sp,
-                                    fontWeight: FontWeight.w700,
+                                      10.h.verticalSpace,
+                                      Row(
+                                        children: <Widget>[
+                                          Icon(
+                                            Icons.person_outline,
+                                            color: Colors.white70,
+                                            size: 16.sp,
+                                          ),
+                                          4.w.horizontalSpace,
+                                          Text(
+                                            'Organized by $organizer',
+                                            style: TextStyle(
+                                              color: Colors.white70,
+                                              fontSize: 12.sp,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                      10.h.verticalSpace,
+                                      Row(
+                                        children: <Widget>[
+                                          Container(
+                                            height: 20.h,
+                                            width: 20.h,
+                                            decoration: const BoxDecoration(
+                                              color: Color(0xFFE50914),
+                                              shape: BoxShape.circle,
+                                            ),
+                                            alignment: Alignment.center,
+                                            child: Icon(
+                                              Icons.currency_rupee,
+                                              color: Colors.white,
+                                              size: 14.sp,
+                                            ),
+                                          ),
+                                          8.w.horizontalSpace,
+                                          Text(
+                                            priceText,
+                                            style: TextStyle(
+                                              color: const Color(0xFFE50914),
+                                              fontSize: 12.sp,
+                                              fontWeight: FontWeight.w500,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                      24.h.verticalSpace,
+                                      Divider(
+                                        color: Colors.white24,
+                                        thickness: 2.h,
+                                      ),
+                                      20.h.verticalSpace,
+                                      Text(
+                                        'Click on Interested to stay updated about this event.',
+                                        style: TextStyle(
+                                          color: Colors.white,
+                                          fontSize: 14.sp,
+                                          height: 1.5,
+                                        ),
+                                      ),
+                                      Padding(
+                                        padding: EdgeInsets.symmetric(
+                                          horizontal: 10.w,
+                                          vertical: 12.h,
+                                        ),
+                                        child: Row(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.spaceBetween,
+                                          children: <Widget>[
+                                            SizedBox(
+                                              width: 160.w,
+                                              child: Column(
+                                                children: <Widget>[
+                                                  Row(
+                                                    children: <Widget>[
+                                                      Icon(
+                                                        Icons.thumb_up,
+                                                        color: const Color(
+                                                          0xFFE50914,
+                                                        ),
+                                                        size: 16.sp,
+                                                      ),
+                                                      6.w.horizontalSpace,
+                                                      Text(
+                                                        '${detail.interestedCount}',
+                                                        style: TextStyle(
+                                                          color: Colors.white,
+                                                          fontSize: 14.sp,
+                                                          fontWeight:
+                                                              FontWeight.w500,
+                                                        ),
+                                                      ),
+                                                    ],
+                                                  ),
+                                                  4.h.verticalSpace,
+                                                  Text(
+                                                    'People have shown interest recently',
+                                                    style: TextStyle(
+                                                      color: Colors.white,
+                                                      fontSize: 12.sp,
+                                                    ),
+                                                  ),
+                                                ],
+                                              ),
+                                            ),
+                                            ElevatedButton(
+                                              onPressed: () {},
+                                              style: ElevatedButton.styleFrom(
+                                                backgroundColor:
+                                                    Colors.transparent,
+                                                foregroundColor: Colors.white,
+                                                side: const BorderSide(
+                                                  color: Color(0xFF323232),
+                                                ),
+                                                elevation: 0,
+                                                padding: EdgeInsets.symmetric(
+                                                  horizontal: 18.w,
+                                                  vertical: 7.h,
+                                                ),
+                                                shape: RoundedRectangleBorder(
+                                                  borderRadius:
+                                                      BorderRadius.circular(
+                                                        4.r,
+                                                      ),
+                                                ),
+                                              ),
+                                              child: Text(
+                                                'Interested ?',
+                                                style: TextStyle(
+                                                  color: Colors.white,
+                                                  fontSize: 12.sp,
+                                                  fontWeight: FontWeight.w400,
+                                                ),
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                      20.h.verticalSpace,
+                                      Divider(
+                                        color: Colors.white24,
+                                        thickness: 2.h,
+                                      ),
+                                      20.h.verticalSpace,
+                                    ],
                                   ),
-                                  unselectedLabelStyle: TextStyle(
-                                    fontSize: 13.sp,
-                                    fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                              SliverPersistentHeader(
+                                pinned: true,
+                                delegate: TabBarHeader(
+                                  TabBar(
+                                    dividerColor: Colors.grey.shade600,
+                                    dividerHeight: 2.h,
+                                    isScrollable: true,
+                                    labelColor: Colors.white,
+                                    unselectedLabelColor: Colors.grey.shade600,
+                                    indicatorColor: const Color(0xFFE50914),
+                                    indicatorWeight: 3.h,
+                                    onTap: (int index) =>
+                                        viewCubit.scrollToSection(
+                                          index,
+                                          <GlobalKey>[
+                                            ticketKey,
+                                            moreInfoKey,
+                                            artistKey,
+                                            aboutKey,
+                                            galleryKey,
+                                            termsKey,
+                                            organizerKey,
+                                          ][index],
+                                          pinnedHeight,
+                                        ),
+                                    labelStyle: TextStyle(
+                                      fontSize: 13.sp,
+                                      fontWeight: FontWeight.w700,
+                                    ),
+                                    unselectedLabelStyle: TextStyle(
+                                      fontSize: 13.sp,
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                                    tabs: const <Tab>[
+                                      Tab(text: 'Ticket'),
+                                      Tab(text: 'More Info'),
+                                      Tab(text: 'Artist'),
+                                      Tab(text: 'About'),
+                                      Tab(text: 'Gallery'),
+                                      Tab(text: 'Terms'),
+                                      Tab(text: 'Organizer'),
+                                    ],
                                   ),
-                                  tabs: const <Tab>[
-                                    Tab(text: 'Ticket'),
-                                    Tab(text: 'More Info'),
-                                    Tab(text: 'Artist'),
-                                    Tab(text: 'About'),
+                                ),
+                              ),
+                              SliverToBoxAdapter(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: <Widget>[
+                                    Container(
+                                      key: ticketKey,
+                                      padding: EdgeInsets.symmetric(
+                                        horizontal: 16.w,
+                                        vertical: 14.h,
+                                      ),
+                                      child: TicketSection(
+                                        citySections: cityTickets,
+                                        expandedTickets:
+                                            viewState.expandedTickets,
+                                        expandedDetailIndexes:
+                                            viewState.expandedDetailIndexes,
+                                        onToggleTicket: viewCubit.toggleTicket,
+                                        onToggleDetail: viewCubit.toggleDetail,
+                                      ),
+                                    ),
+                                    Divider(
+                                      color: Colors.white12,
+                                      thickness: 1.h,
+                                      height: 24.h,
+                                    ),
+                                    Container(
+                                      key: moreInfoKey,
+                                      padding: EdgeInsets.symmetric(
+                                        horizontal: 16.w,
+                                        vertical: 12.h,
+                                      ),
+                                      child: MoreInfoSection(
+                                        eventType: eventType,
+                                        timeRange: timeRange.isEmpty
+                                            ? '7:15 PM - 10:15 PM'
+                                            : timeRange,
+                                        languages: languages,
+                                        ageConstraint: ageConstraint,
+                                      ),
+                                    ),
+                                    Divider(
+                                      color: Colors.white12,
+                                      thickness: 1.h,
+                                      height: 24.h,
+                                    ),
+                                    Container(
+                                      key: artistKey,
+                                      padding: EdgeInsets.symmetric(
+                                        horizontal: 16.w,
+                                        vertical: 12.h,
+                                      ),
+                                      child: ArtistSection(artists: artists),
+                                    ),
+                                    Divider(
+                                      color: Colors.white12,
+                                      thickness: 1.h,
+                                      height: 24.h,
+                                    ),
+                                    Container(
+                                      key: aboutKey,
+                                      padding: EdgeInsets.symmetric(
+                                        horizontal: 16.w,
+                                        vertical: 12.h,
+                                      ),
+                                      child: AboutSection(
+                                        text: aboutText,
+                                        expanded: viewState.aboutExpanded,
+                                        onToggle: viewCubit.toggleAbout,
+                                      ),
+                                    ),
+                                    Divider(
+                                      color: Colors.white12,
+                                      thickness: 1.h,
+                                      height: 24.h,
+                                    ),
+                                    GallerySection(key: galleryKey),
+                                    12.h.verticalSpace,
+                                    Divider(
+                                      color: Colors.white12,
+                                      thickness: 1.h,
+                                      height: 24.h,
+                                    ),
+                                    Container(
+                                      key: termsKey,
+                                      padding: EdgeInsets.symmetric(
+                                        horizontal: 16.w,
+                                        vertical: 12.h,
+                                      ),
+                                      child: TermsSection(),
+                                    ),
+                                    Divider(
+                                      color: Colors.white12,
+                                      thickness: 1.h,
+                                      height: 24.h,
+                                    ),
+                                    Container(
+                                      key: organizerKey,
+                                      padding: EdgeInsets.symmetric(
+                                        horizontal: 16.w,
+                                        vertical: 12.h,
+                                      ),
+                                      child: OrganizerSection(
+                                        name: organizerName,
+                                        followers: organizerFollowers,
+                                        role: organizerRole,
+                                        logoUrl: organizerImage,
+                                      ),
+                                    ),
                                   ],
                                 ),
                               ),
-                            ),
-                            SliverToBoxAdapter(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: <Widget>[
-                                  Container(
-                                    key: ticketKey,
-                                    padding: EdgeInsets.symmetric(
-                                      horizontal: 16.w,
-                                      vertical: 14.h,
-                                    ),
-                                    child: TicketSection(
-                                      citySections: cityTickets,
-                                      expandedTickets:
-                                          viewState.expandedTickets,
-                                      expandedDetailIndexes:
-                                          viewState.expandedDetailIndexes,
-                                      onToggleTicket: viewCubit.toggleTicket,
-                                      onToggleDetail: viewCubit.toggleDetail,
-                                    ),
-                                  ),
-                                  Divider(
-                                    color: Colors.white12,
-                                    thickness: 1.h,
-                                    height: 24.h,
-                                  ),
-                                  Container(
-                                    key: moreInfoKey,
-                                    padding: EdgeInsets.symmetric(
-                                      horizontal: 16.w,
-                                      vertical: 12.h,
-                                    ),
-                                    child: MoreInfoSection(
-                                      eventType: eventType,
-                                      timeRange: timeRange.isEmpty
-                                          ? '7:15 PM - 10:15 PM'
-                                          : timeRange,
-                                      languages: languages,
-                                      ageConstraint: ageConstraint,
-                                    ),
-                                  ),
-                                  Divider(
-                                    color: Colors.white12,
-                                    thickness: 1.h,
-                                    height: 24.h,
-                                  ),
-                                  Container(
-                                    key: artistKey,
-                                    padding: EdgeInsets.symmetric(
-                                      horizontal: 16.w,
-                                      vertical: 12.h,
-                                    ),
-                                    child: ArtistSection(artists: artists),
-                                  ),
-                                  Divider(
-                                    color: Colors.white12,
-                                    thickness: 1.h,
-                                    height: 24.h,
-                                  ),
-                                  Container(
-                                    key: aboutKey,
-                                    padding: EdgeInsets.symmetric(
-                                      horizontal: 16.w,
-                                      vertical: 12.h,
-                                    ),
-                                    child: AboutSection(
-                                      text: aboutText,
-                                      expanded: viewState.aboutExpanded,
-                                      onToggle: viewCubit.toggleAbout,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ],
+                            ],
+                          ),
                         ),
                       ),
                     ),
@@ -579,4 +665,32 @@ Widget buildPill(String label, {bool isRed = false}) {
       ),
     ),
   );
+}
+
+List<String> _extractTerms(EventDetail detail) {
+  final Iterable<String?> rawTerms = detail.eventVenues
+      .map((EventVenue e) => e.termsAndCondition)
+      .where((String? t) => t != null && t.trim().isNotEmpty);
+
+  final String combined = rawTerms.isNotEmpty ? rawTerms.first!.trim() : '';
+  if (combined.isEmpty) {
+    return <String>[
+      'Lorem ipsum dolor sit amet.',
+      'Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore.',
+      'Quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea.',
+      'Sed do eiusmod tempor incididunt.',
+      'Duis aute irure dolor in reprehenderit.',
+    ];
+  }
+
+  final String plain = combined
+      .replaceAll(RegExp(r'<[^>]+>'), ' ')
+      .replaceAll('&nbsp;', ' ');
+  final List<String> sentences = plain
+      .split(RegExp(r'[.\n]'))
+      .map((String s) => s.trim())
+      .where((String s) => s.isNotEmpty)
+      .toList();
+
+  return sentences.isEmpty ? <String>[plain.trim()] : sentences;
 }

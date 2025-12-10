@@ -6,7 +6,6 @@ import '../cubit/event_detail_cubit.dart';
 import '../cubit/event_detail_view_cubit.dart';
 import '../widgets/event_detail_view.dart';
 
-// Entry point wiring cubits and view
 class EventDetailPage extends StatelessWidget {
   const EventDetailPage({super.key, required this.eventId});
 
