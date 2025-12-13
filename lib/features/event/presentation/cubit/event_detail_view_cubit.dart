@@ -79,15 +79,25 @@ class EventDetailViewCubit extends Cubit<EventDetailViewState> {
   }
 
   Future<void> _scrollToKey(GlobalKey key, double pinnedHeight) async {
-    final BuildContext? targetContext = key.currentContext;
+    if (!scrollController.hasClients) return;
+
+    BuildContext? targetContext = key.currentContext;
+    if (targetContext == null) {
+      await Future<void>.delayed(Duration.zero);
+      targetContext = key.currentContext;
+    }
     if (targetContext == null) return;
 
-    final RenderBox? box = targetContext.findRenderObject() as RenderBox?;
-    if (box == null) return;
-    final RenderAbstractViewport viewport = RenderAbstractViewport.of(box);
+    final RenderObject? renderObject = targetContext.findRenderObject();
+    if (renderObject is! RenderBox) return;
+    final RenderAbstractViewport? viewport =
+        RenderAbstractViewport.of(renderObject);
+    if (viewport == null) return;
 
-    final double target =
-        viewport.getOffsetToReveal(box, 0).offset - (pinnedHeight - 8.h);
+    final double target = viewport.getOffsetToReveal(
+      renderObject,
+      0,
+    ).offset - (pinnedHeight - 8.h);
 
     await scrollController.animateTo(
       target.clamp(

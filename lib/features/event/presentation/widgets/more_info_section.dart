@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
+import '../../../../core/widgets/asset_icon.dart';
+
 class MoreInfoSection extends StatelessWidget {
   const MoreInfoSection({
     super.key,
@@ -18,10 +20,10 @@ class MoreInfoSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final List<_InfoRow> rows = <_InfoRow>[
-      _InfoRow(icon: Icons.terrain_outlined, label: eventType),
-      _InfoRow(icon: Icons.hourglass_bottom, label: timeRange),
-      _InfoRow(icon: Icons.language, label: languages),
-      _InfoRow(icon: Icons.child_care, label: ageConstraint),
+      _InfoRow(iconPath: 'assets/icons/events.png', label: eventType),
+      _InfoRow(iconPath: 'assets/icons/time.png', label: timeRange),
+      _InfoRow(iconPath: 'assets/icons/language.png', label: languages),
+      _InfoRow(iconPath: 'assets/icons/parental_guidance.png', label: ageConstraint),
     ];
 
     return Column(
@@ -41,7 +43,10 @@ class MoreInfoSection extends StatelessWidget {
             padding: EdgeInsets.only(bottom: 12.h),
             child: Row(
               children: <Widget>[
-                Icon(row.icon, color: Colors.white, size: 18.sp),
+                AssetIcon(
+                  asset: row.iconPath,
+                  size: 18.w,
+                ),
                 12.w.horizontalSpace,
                 Expanded(
                   child: Text(
@@ -63,8 +68,8 @@ class MoreInfoSection extends StatelessWidget {
 }
 
 class _InfoRow {
-  const _InfoRow({required this.icon, required this.label});
+  const _InfoRow({required this.iconPath, required this.label});
 
-  final IconData icon;
+  final String iconPath;
   final String label;
 }

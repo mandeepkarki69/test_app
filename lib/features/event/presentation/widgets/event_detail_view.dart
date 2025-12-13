@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 import '../../domain/entities/event_detail.dart';
+import '../../../../core/widgets/asset_icon.dart';
 import '../cubit/event_detail_cubit.dart';
 import '../cubit/event_detail_view_cubit.dart';
 import '../helpers/event_detail_mappers.dart';
@@ -17,8 +18,31 @@ import 'ticket_bottom_bar.dart';
 import 'ticket_section.dart';
 import 'terms_section.dart';
 
-class EventDetailView extends StatelessWidget {
+class EventDetailView extends StatefulWidget {
   const EventDetailView({super.key});
+
+  @override
+  State<EventDetailView> createState() => _EventDetailViewState();
+}
+
+class _EventDetailViewState extends State<EventDetailView> {
+  final GlobalKey _ticketKey = GlobalKey();
+  final GlobalKey _galleryKey = GlobalKey();
+  final GlobalKey _termsKey = GlobalKey();
+  final GlobalKey _organizerKey = GlobalKey();
+  final GlobalKey _moreInfoKey = GlobalKey();
+  final GlobalKey _artistKey = GlobalKey();
+  final GlobalKey _aboutKey = GlobalKey();
+
+  late final List<GlobalKey> _sectionKeys = <GlobalKey>[
+    _ticketKey,
+    _moreInfoKey,
+    _artistKey,
+    _aboutKey,
+    _galleryKey,
+    _termsKey,
+    _organizerKey,
+  ];
 
   @override
   Widget build(BuildContext context) {
@@ -35,14 +59,6 @@ class EventDetailView extends StatelessWidget {
             child: Text(message, style: const TextStyle(color: Colors.white)),
           ),
           success: (EventDetail detail) {
-            final GlobalKey ticketKey = GlobalKey();
-            final GlobalKey galleryKey = GlobalKey();
-            final GlobalKey termsKey = GlobalKey();
-            final GlobalKey organizerKey = GlobalKey();
-            final GlobalKey moreInfoKey = GlobalKey();
-            final GlobalKey artistKey = GlobalKey();
-            final GlobalKey aboutKey = GlobalKey();
-
             final List<CityTickets> cityTickets = mapTickets(
               detail.eventVenues,
             );
@@ -112,8 +128,9 @@ class EventDetailView extends StatelessWidget {
                 ? detail.organizer!.description!
                 : 'Organizer';
 
-            final double pinnedHeight =
-                kToolbarHeight + MediaQuery.of(context).padding.top + 46.h;
+            final double pinnedHeight = 15.h;
+            final double pinnedHeightWithMargin =
+                kToolbarHeight + MediaQuery.of(context).padding.top + 50.h;
 
             return BlocBuilder<EventDetailViewCubit, EventDetailViewState>(
               builder: (BuildContext context, EventDetailViewState viewState) {
@@ -136,15 +153,10 @@ class EventDetailView extends StatelessWidget {
                         },
                     child: NotificationListener<ScrollNotification>(
                       onNotification: (ScrollNotification notification) {
-                        viewCubit.handleScroll(<GlobalKey>[
-                          ticketKey,
-                          moreInfoKey,
-                          artistKey,
-                          aboutKey,
-                          galleryKey,
-                          termsKey,
-                          organizerKey,
-                        ], pinnedHeight + 6.h);
+                        viewCubit.handleScroll(
+                          _sectionKeys,
+                          pinnedHeightWithMargin,
+                        );
                         return false;
                       },
                       child: Scaffold(
@@ -294,10 +306,9 @@ class EventDetailView extends StatelessWidget {
                                       15.h.verticalSpace,
                                       Row(
                                         children: <Widget>[
-                                          Icon(
-                                            Icons.location_on_outlined,
-                                            color: Colors.white70,
-                                            size: 16.sp,
+                                          AssetIcon(
+                                            asset: 'assets/icons/location.png',
+                                            size: 16.w,
                                           ),
                                           4.w.horizontalSpace,
                                           Text(
@@ -312,10 +323,9 @@ class EventDetailView extends StatelessWidget {
                                       10.h.verticalSpace,
                                       Row(
                                         children: <Widget>[
-                                          Icon(
-                                            Icons.calendar_month_outlined,
-                                            color: Colors.white70,
-                                            size: 15.sp,
+                                          AssetIcon(
+                                            asset: 'assets/icons/calender.png',
+                                            size: 15.w,
                                           ),
                                           4.w.horizontalSpace,
                                           Text(
@@ -330,10 +340,9 @@ class EventDetailView extends StatelessWidget {
                                       10.h.verticalSpace,
                                       Row(
                                         children: <Widget>[
-                                          Icon(
-                                            Icons.person_outline,
-                                            color: Colors.white70,
-                                            size: 16.sp,
+                                          AssetIcon(
+                                            asset: 'assets/icons/follower.png',
+                                            size: 16.w,
                                           ),
                                           4.w.horizontalSpace,
                                           Text(
@@ -348,19 +357,9 @@ class EventDetailView extends StatelessWidget {
                                       10.h.verticalSpace,
                                       Row(
                                         children: <Widget>[
-                                          Container(
-                                            height: 20.h,
-                                            width: 20.h,
-                                            decoration: const BoxDecoration(
-                                              color: Color(0xFFE50914),
-                                              shape: BoxShape.circle,
-                                            ),
-                                            alignment: Alignment.center,
-                                            child: Icon(
-                                              Icons.currency_rupee,
-                                              color: Colors.white,
-                                              size: 14.sp,
-                                            ),
+                                          AssetIcon(
+                                            asset: 'assets/icons/rs.png',
+                                            size: 16.w,
                                           ),
                                           8.w.horizontalSpace,
                                           Text(
@@ -449,7 +448,7 @@ class EventDetailView extends StatelessWidget {
                                                 shape: RoundedRectangleBorder(
                                                   borderRadius:
                                                       BorderRadius.circular(
-                                                        4.r,
+                                                        6.r,
                                                       ),
                                                 ),
                                               ),
@@ -480,24 +479,19 @@ class EventDetailView extends StatelessWidget {
                                 delegate: TabBarHeader(
                                   TabBar(
                                     dividerColor: Colors.grey.shade600,
-                                    dividerHeight: 2.h,
+                                    dividerHeight: 1.h,
                                     isScrollable: true,
+                                    tabAlignment: TabAlignment.start,
                                     labelColor: Colors.white,
                                     unselectedLabelColor: Colors.grey.shade600,
                                     indicatorColor: const Color(0xFFE50914),
+                                    indicatorSize: TabBarIndicatorSize.tab,
+                                    indicatorPadding: EdgeInsets.zero,
                                     indicatorWeight: 3.h,
                                     onTap: (int index) =>
                                         viewCubit.scrollToSection(
                                           index,
-                                          <GlobalKey>[
-                                            ticketKey,
-                                            moreInfoKey,
-                                            artistKey,
-                                            aboutKey,
-                                            galleryKey,
-                                            termsKey,
-                                            organizerKey,
-                                          ][index],
+                                          _sectionKeys[index],
                                           pinnedHeight,
                                         ),
                                     labelStyle: TextStyle(
@@ -525,7 +519,7 @@ class EventDetailView extends StatelessWidget {
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: <Widget>[
                                     Container(
-                                      key: ticketKey,
+                                      key: _ticketKey,
                                       padding: EdgeInsets.symmetric(
                                         horizontal: 16.w,
                                         vertical: 14.h,
@@ -546,7 +540,7 @@ class EventDetailView extends StatelessWidget {
                                       height: 24.h,
                                     ),
                                     Container(
-                                      key: moreInfoKey,
+                                      key: _moreInfoKey,
                                       padding: EdgeInsets.symmetric(
                                         horizontal: 16.w,
                                         vertical: 12.h,
@@ -566,7 +560,7 @@ class EventDetailView extends StatelessWidget {
                                       height: 24.h,
                                     ),
                                     Container(
-                                      key: artistKey,
+                                      key: _artistKey,
                                       padding: EdgeInsets.symmetric(
                                         horizontal: 16.w,
                                         vertical: 12.h,
@@ -579,7 +573,7 @@ class EventDetailView extends StatelessWidget {
                                       height: 24.h,
                                     ),
                                     Container(
-                                      key: aboutKey,
+                                      key: _aboutKey,
                                       padding: EdgeInsets.symmetric(
                                         horizontal: 16.w,
                                         vertical: 12.h,
@@ -595,7 +589,7 @@ class EventDetailView extends StatelessWidget {
                                       thickness: 1.h,
                                       height: 24.h,
                                     ),
-                                    GallerySection(key: galleryKey),
+                                    GallerySection(key: _galleryKey),
                                     12.h.verticalSpace,
                                     Divider(
                                       color: Colors.white12,
@@ -603,7 +597,7 @@ class EventDetailView extends StatelessWidget {
                                       height: 24.h,
                                     ),
                                     Container(
-                                      key: termsKey,
+                                      key: _termsKey,
                                       padding: EdgeInsets.symmetric(
                                         horizontal: 16.w,
                                         vertical: 12.h,
@@ -616,7 +610,7 @@ class EventDetailView extends StatelessWidget {
                                       height: 24.h,
                                     ),
                                     Container(
-                                      key: organizerKey,
+                                      key: _organizerKey,
                                       padding: EdgeInsets.symmetric(
                                         horizontal: 16.w,
                                         vertical: 12.h,

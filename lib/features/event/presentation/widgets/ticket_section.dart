@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
+import '../../../../core/widgets/asset_icon.dart';
 import '../helpers/event_detail_models.dart';
 
 class TicketSection extends StatelessWidget {
@@ -128,11 +129,14 @@ class TicketSection extends StatelessWidget {
                                   key: ValueKey<String>(
                                     'ticket-details-$ticketId',
                                   ),
-                                  padding: EdgeInsets.only(top: 14.h),
+                                  padding: EdgeInsets.zero,
                                   child: Container(
                                     decoration: BoxDecoration(
                                       color: const Color(0xFF0E0E0E),
-                                      borderRadius: BorderRadius.circular(14.r),
+                                      borderRadius: BorderRadius.vertical(
+                                        top: Radius.zero,
+                                        bottom: Radius.circular(14.r),
+                                      ),
                                       border: Border.all(
                                         color: const Color(0xFF2B2B2B),
                                       ),
@@ -197,12 +201,16 @@ class TicketCard extends StatelessWidget {
     final double rawSpacing =
         (totalHeight - (dotCount * dotSize)) / (dotCount + 1);
     final double dotSpacing = rawSpacing.clamp(4.0, 18.0);
+    final BorderRadius cardRadius = isExpanded
+        ? BorderRadius.vertical(top: Radius.circular(10.r))
+        : BorderRadius.circular(10.r);
 
     return AnimatedContainer(
       duration: const Duration(milliseconds: 220),
       curve: Curves.easeInOut,
       height: totalHeight,
       decoration: BoxDecoration(
+        borderRadius: cardRadius,
         boxShadow: isExpanded
             ? const <BoxShadow>[
                 BoxShadow(
@@ -217,7 +225,7 @@ class TicketCard extends StatelessWidget {
         clipBehavior: Clip.none,
         children: <Widget>[
           ClipRRect(
-            borderRadius: BorderRadius.circular(10.r),
+            borderRadius: cardRadius,
             child: Container(
               color: isExpanded
                   ? const Color(0xFF232323)
@@ -234,7 +242,8 @@ class TicketCard extends StatelessWidget {
                             color: const Color(0xFFE50914),
                             borderRadius: BorderRadius.only(
                               topLeft: Radius.circular(10.r),
-                              bottomLeft: Radius.circular(10.r),
+                              bottomLeft:
+                                  isExpanded ? Radius.zero : Radius.circular(10.r),
                             ),
                           ),
                           child: Center(
@@ -304,10 +313,9 @@ class TicketCard extends StatelessWidget {
                         children: <Widget>[
                           Row(
                             children: <Widget>[
-                              Icon(
-                                Icons.hourglass_empty,
-                                color: Colors.white,
-                                size: 16.h,
+                              AssetIcon(
+                                asset: 'assets/icons/time.png',
+                                size: 16.w,
                               ),
                               8.w.horizontalSpace,
                               Flexible(
@@ -326,10 +334,9 @@ class TicketCard extends StatelessWidget {
                           Row(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: <Widget>[
-                              Icon(
-                                Icons.location_on,
-                                color: Colors.white,
-                                size: 16.h,
+                              AssetIcon(
+                                asset: 'assets/icons/location.png',
+                                size: 16.w,
                               ),
                               8.w.horizontalSpace,
                               Expanded(
@@ -352,10 +359,9 @@ class TicketCard extends StatelessWidget {
                               SizedBox(
                                 child: Row(
                                   children: <Widget>[
-                                    Icon(
-                                      Icons.map,
-                                      color: Colors.white,
-                                      size: 16.h,
+                                    AssetIcon(
+                                      asset: 'assets/icons/map.png',
+                                      size: 16.w,
                                     ),
                                     8.w.horizontalSpace,
                                     Text(
@@ -374,10 +380,9 @@ class TicketCard extends StatelessWidget {
                                 child: CircleAvatar(
                                   radius: 14.r,
                                   backgroundColor: Colors.white,
-                                  child: Icon(
-                                    Icons.confirmation_num,
-                                    color: const Color(0xFFE50914),
-                                    size: 16.sp,
+                                  child: AssetIcon(
+                                    asset: 'assets/icons/ticket_button.png',
+                                    size: 16.w,
                                   ),
                                 ),
                               ),
@@ -505,58 +510,63 @@ class OtherDetailsCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      width: double.infinity,
-      padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 12.h),
-      decoration: BoxDecoration(
-        color: const Color(0xFF141414),
-        borderRadius: BorderRadius.circular(12.r),
-        border: Border.all(color: const Color(0xFF3A3A3A)),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: <Widget>[
-          Text(
-            'Other Details',
-            style: TextStyle(
-              color: Colors.white,
-              fontSize: 15.sp,
-              fontWeight: FontWeight.w700,
-            ),
-          ),
-          8.h.verticalSpace,
-          AnimatedSwitcher(
-            duration: const Duration(milliseconds: 220),
-            switchInCurve: Curves.easeOutCubic,
-            switchOutCurve: Curves.easeInCubic,
-            child: Text(
-              details,
-              key: ValueKey<bool>(isExpanded),
+    return AnimatedSize(
+      duration: const Duration(milliseconds: 220),
+      curve: Curves.easeInOut,
+      alignment: Alignment.topCenter,
+      child: Container(
+        width: double.infinity,
+        padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 12.h),
+        decoration: BoxDecoration(
+          color: const Color(0xFF141414),
+          borderRadius: BorderRadius.circular(12.r),
+          border: Border.all(color: const Color(0xFF3A3A3A)),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: <Widget>[
+            Text(
+              'Other Details',
               style: TextStyle(
                 color: Colors.white,
-                fontSize: 12.sp,
-                height: 1.5,
-              ),
-              maxLines: isExpanded ? null : 2,
-              overflow: isExpanded
-                  ? TextOverflow.visible
-                  : TextOverflow.ellipsis,
-            ),
-          ),
-          4.h.verticalSpace,
-          GestureDetector(
-            onTap: onToggle,
-            behavior: HitTestBehavior.opaque,
-            child: Text(
-              isExpanded ? 'see less' : 'see more',
-              style: TextStyle(
-                color: const Color(0xFFE50914),
-                fontSize: 12.sp,
+                fontSize: 15.sp,
                 fontWeight: FontWeight.w700,
               ),
             ),
-          ),
-        ],
+            8.h.verticalSpace,
+            AnimatedSwitcher(
+              duration: const Duration(milliseconds: 220),
+              switchInCurve: Curves.easeOutCubic,
+              switchOutCurve: Curves.easeInCubic,
+              child: Text(
+                details,
+                key: ValueKey<bool>(isExpanded),
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 12.sp,
+                  height: 1.5,
+                ),
+                maxLines: isExpanded ? null : 2,
+                overflow: isExpanded
+                    ? TextOverflow.visible
+                    : TextOverflow.ellipsis,
+              ),
+            ),
+            4.h.verticalSpace,
+            GestureDetector(
+              onTap: onToggle,
+              behavior: HitTestBehavior.opaque,
+              child: Text(
+                isExpanded ? 'see less' : 'see more',
+                style: TextStyle(
+                  color: const Color(0xFFE50914),
+                  fontSize: 12.sp,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

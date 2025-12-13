@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
+import '../../../../core/widgets/asset_icon.dart';
+
 class OrganizerSection extends StatelessWidget {
   const OrganizerSection({
     super.key,
@@ -75,7 +77,10 @@ class OrganizerSection extends StatelessWidget {
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: <Widget>[
-                  Icon(Icons.groups_outlined, color: Colors.white, size: 25.sp),
+                  AssetIcon(
+                    asset: 'assets/icons/follower.png',
+                    size: 22.w,
+                  ),
                   6.w.horizontalSpace,
                   Text(
                     '$followers Followers',
