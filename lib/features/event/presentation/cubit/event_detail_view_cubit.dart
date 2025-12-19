@@ -3,38 +3,7 @@ import 'package:flutter/rendering.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
-class EventDetailViewState {
-  const EventDetailViewState({
-    this.tabIndex = 0,
-    this.aboutExpanded = false,
-    this.programmaticScroll = false,
-    this.expandedTickets = const <String, bool>{},
-    this.expandedDetailIndexes = const <String, Set<int>>{},
-  });
-
-  final int tabIndex;
-  final bool aboutExpanded;
-  final bool programmaticScroll;
-  final Map<String, bool> expandedTickets;
-  final Map<String, Set<int>> expandedDetailIndexes;
-
-  EventDetailViewState copyWith({
-    int? tabIndex,
-    bool? aboutExpanded,
-    bool? programmaticScroll,
-    Map<String, bool>? expandedTickets,
-    Map<String, Set<int>>? expandedDetailIndexes,
-  }) {
-    return EventDetailViewState(
-      tabIndex: tabIndex ?? this.tabIndex,
-      aboutExpanded: aboutExpanded ?? this.aboutExpanded,
-      programmaticScroll: programmaticScroll ?? this.programmaticScroll,
-      expandedTickets: expandedTickets ?? this.expandedTickets,
-      expandedDetailIndexes:
-          expandedDetailIndexes ?? this.expandedDetailIndexes,
-    );
-  }
-}
+import 'event_detail_view_state.dart';
 
 class EventDetailViewCubit extends Cubit<EventDetailViewState> {
   EventDetailViewCubit() : super(const EventDetailViewState());
@@ -90,14 +59,14 @@ class EventDetailViewCubit extends Cubit<EventDetailViewState> {
 
     final RenderObject? renderObject = targetContext.findRenderObject();
     if (renderObject is! RenderBox) return;
-    final RenderAbstractViewport? viewport =
-        RenderAbstractViewport.of(renderObject);
+    final RenderAbstractViewport? viewport = RenderAbstractViewport.of(
+      renderObject,
+    );
     if (viewport == null) return;
 
-    final double target = viewport.getOffsetToReveal(
-      renderObject,
-      0,
-    ).offset - (pinnedHeight - 8.h);
+    final double target =
+        viewport.getOffsetToReveal(renderObject, 0).offset -
+        (pinnedHeight - 8.h);
 
     await scrollController.animateTo(
       target.clamp(

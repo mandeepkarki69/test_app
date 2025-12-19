@@ -20,10 +20,10 @@ class MoreInfoSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final List<_InfoRow> rows = <_InfoRow>[
-      _InfoRow(iconPath: 'assets/icons/events.png', label: eventType),
-      _InfoRow(iconPath: 'assets/icons/time.png', label: timeRange),
-      _InfoRow(iconPath: 'assets/icons/language.png', label: languages),
-      _InfoRow(iconPath: 'assets/icons/parental_guidance.png', label: ageConstraint),
+      _InfoRow(iconPath: 'assets/icons/events.svg', label: eventType),
+      _InfoRow(iconPath: 'assets/icons/time.svg', label: timeRange),
+      _InfoRow(iconPath: 'assets/icons/language.svg', label: languages),
+      _InfoRow(iconPath: 'assets/icons/parental_guidance.svg', label: ageConstraint),
     ];
 
     return Column(

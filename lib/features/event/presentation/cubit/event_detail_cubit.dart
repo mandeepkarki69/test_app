@@ -6,14 +6,7 @@ import '../../domain/entities/event_detail.dart';
 import '../../domain/usecases/get_event_detail.dart';
 
 part 'event_detail_cubit.freezed.dart';
-
-@freezed
-class EventDetailState with _$EventDetailState {
-  const factory EventDetailState.initial() = _Initial;
-  const factory EventDetailState.loading() = _Loading;
-  const factory EventDetailState.success(EventDetail detail) = _Success;
-  const factory EventDetailState.error(String message) = _Error;
-}
+part 'event_detail_state.dart';
 
 class EventDetailCubit extends Cubit<EventDetailState> {
   EventDetailCubit(this._getEventDetail)

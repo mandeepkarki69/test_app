@@ -314,7 +314,7 @@ class TicketCard extends StatelessWidget {
                           Row(
                             children: <Widget>[
                               AssetIcon(
-                                asset: 'assets/icons/time.png',
+                                asset: 'assets/icons/time.svg',
                                 size: 16.w,
                               ),
                               8.w.horizontalSpace,
@@ -335,7 +335,7 @@ class TicketCard extends StatelessWidget {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: <Widget>[
                               AssetIcon(
-                                asset: 'assets/icons/location.png',
+                                asset: 'assets/icons/location.svg',
                                 size: 16.w,
                               ),
                               8.w.horizontalSpace,
@@ -360,7 +360,7 @@ class TicketCard extends StatelessWidget {
                                 child: Row(
                                   children: <Widget>[
                                     AssetIcon(
-                                      asset: 'assets/icons/map.png',
+                                      asset: 'assets/icons/map.svg',
                                       size: 16.w,
                                     ),
                                     8.w.horizontalSpace,
@@ -381,7 +381,7 @@ class TicketCard extends StatelessWidget {
                                   radius: 14.r,
                                   backgroundColor: Colors.white,
                                   child: AssetIcon(
-                                    asset: 'assets/icons/ticket_button.png',
+                                    asset: 'assets/icons/ticket_button.svg',
                                     size: 16.w,
                                   ),
                                 ),

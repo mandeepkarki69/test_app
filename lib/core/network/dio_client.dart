@@ -10,7 +10,7 @@ class DioClient {
           baseUrl: baseUrl,
           connectTimeout: const Duration(seconds: 20),
           receiveTimeout: const Duration(seconds: 20),
-          headers: <String, String>{
+          headers: {
             'Content-Type': 'application/json',
             'Accept': 'application/json',
           },
@@ -23,7 +23,7 @@ class DioClient {
 class AppInterceptor extends Interceptor {
   @override
   void onRequest(RequestOptions options, RequestInterceptorHandler handler) {
-    options.headers.addAll(<String, String>{
+    options.headers.addAll({
       'Accept': 'application/json',
       'Content-Type': 'application/json',
       'authorization': 'Bearer YOUR_API_KEY_HERE',

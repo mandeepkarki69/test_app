@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 
 class AssetIcon extends StatelessWidget {
   const AssetIcon({
@@ -14,6 +15,17 @@ class AssetIcon extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    if (asset.toLowerCase().endsWith('.svg')) {
+      return SvgPicture.asset(
+        asset,
+        width: size,
+        height: size,
+        colorFilter: color == null
+            ? null
+            : ColorFilter.mode(color!, BlendMode.srcIn),
+      );
+    }
+
     return Image.asset(
       asset,
       width: size,

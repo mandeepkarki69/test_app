@@ -6,6 +6,7 @@ import '../../domain/entities/event_detail.dart';
 import '../../../../core/widgets/asset_icon.dart';
 import '../cubit/event_detail_cubit.dart';
 import '../cubit/event_detail_view_cubit.dart';
+import '../cubit/event_detail_view_state.dart';
 import '../helpers/event_detail_mappers.dart';
 import '../helpers/event_detail_models.dart';
 import 'about_section.dart';
@@ -307,7 +308,7 @@ class _EventDetailViewState extends State<EventDetailView> {
                                       Row(
                                         children: <Widget>[
                                           AssetIcon(
-                                            asset: 'assets/icons/location.png',
+                                            asset: 'assets/icons/location.svg',
                                             size: 16.w,
                                           ),
                                           4.w.horizontalSpace,
@@ -324,7 +325,7 @@ class _EventDetailViewState extends State<EventDetailView> {
                                       Row(
                                         children: <Widget>[
                                           AssetIcon(
-                                            asset: 'assets/icons/calender.png',
+                                            asset: 'assets/icons/calender.svg',
                                             size: 15.w,
                                           ),
                                           4.w.horizontalSpace,
@@ -341,7 +342,7 @@ class _EventDetailViewState extends State<EventDetailView> {
                                       Row(
                                         children: <Widget>[
                                           AssetIcon(
-                                            asset: 'assets/icons/follower.png',
+                                            asset: 'assets/icons/follower.svg',
                                             size: 16.w,
                                           ),
                                           4.w.horizontalSpace,
@@ -358,7 +359,7 @@ class _EventDetailViewState extends State<EventDetailView> {
                                       Row(
                                         children: <Widget>[
                                           AssetIcon(
-                                            asset: 'assets/icons/rs.png',
+                                            asset: 'assets/icons/rs.svg',
                                             size: 16.w,
                                           ),
                                           8.w.horizontalSpace,
@@ -659,32 +660,4 @@ Widget buildPill(String label, {bool isRed = false}) {
       ),
     ),
   );
-}
-
-List<String> _extractTerms(EventDetail detail) {
-  final Iterable<String?> rawTerms = detail.eventVenues
-      .map((EventVenue e) => e.termsAndCondition)
-      .where((String? t) => t != null && t.trim().isNotEmpty);
-
-  final String combined = rawTerms.isNotEmpty ? rawTerms.first!.trim() : '';
-  if (combined.isEmpty) {
-    return <String>[
-      'Lorem ipsum dolor sit amet.',
-      'Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore.',
-      'Quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea.',
-      'Sed do eiusmod tempor incididunt.',
-      'Duis aute irure dolor in reprehenderit.',
-    ];
-  }
-
-  final String plain = combined
-      .replaceAll(RegExp(r'<[^>]+>'), ' ')
-      .replaceAll('&nbsp;', ' ');
-  final List<String> sentences = plain
-      .split(RegExp(r'[.\n]'))
-      .map((String s) => s.trim())
-      .where((String s) => s.isNotEmpty)
-      .toList();
-
-  return sentences.isEmpty ? <String>[plain.trim()] : sentences;
 }

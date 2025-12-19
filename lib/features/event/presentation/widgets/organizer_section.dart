@@ -78,7 +78,7 @@ class OrganizerSection extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: <Widget>[
                   AssetIcon(
-                    asset: 'assets/icons/follower.png',
+                    asset: 'assets/icons/follower.svg',
                     size: 22.w,
                   ),
                   6.w.horizontalSpace,
